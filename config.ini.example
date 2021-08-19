@@ -1,4 +1,3 @@
-hostname=
-db_name=
-user=
-password=
+hostname=localhost
+db_name=cryptocurrency_trading
+user=root
