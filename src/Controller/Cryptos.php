@@ -44,15 +44,36 @@ class Cryptos
         }
 
         $this->cryptocurrency = $cryptocurrency;
+
         require __DIR__ . '/../view/cryptos/buy.phtml';
     }
 
     public function buyPost(string $id): void
     {
-        // TODO
-        // verify if user is logged in
-        // use $this->userCryptocurrencyManager->addCryptocurrencyToUser() method
+        $user = $this->userManager->getByLogin((string) $_SESSION['login']);
+        if (!$user) {
+            header('Location: /cryptos');
+            return;
+        }
 
+        $cryptocurrency = $this->cryptocurrencyManager->getCryptocurrencyById($id);
+        if (!$cryptocurrency) {
+            header('Location: /cryptos');
+            return;
+        }
+        $amount = $_POST['amount'];
+        $userId = $user->getId();
+        $userFounds = $user->getFunds();
+        $cryptocurrencyPrice = $cryptocurrency->getPrice();
+        $cost = $amount * $cryptocurrencyPrice;
+
+        if ($cost > $userFounds){
+            $_SESSION['flash'] = 'Not enough funds!';
+        }else{
+            $this->userCryptocurrencyManager->addCryptocurrencyToUser($userId,  $id, (int)$amount);
+            $this->userCryptocurrencyManager->subtractFoundsFromUser($userId,  $cost);
+            $_SESSION['flash'] = 'You have purchased ' .$id. ' cryptocurrency in the amount of '.$amount.' (cost: '.$cost.' USD).';
+        }
         header('Location: /cryptos');
     }
 
@@ -71,6 +92,7 @@ class Cryptos
         }
 
         $this->cryptocurrency = $cryptocurrency;
+
         require __DIR__ . '/../view/cryptos/sell.phtml';
     }
 
@@ -79,8 +101,6 @@ class Cryptos
         // TODO
         // verify if user is logged in
         // use $this->userCryptocurrencyManager->subtractCryptocurrencyFromUser() method
-
-        header('Location: /cryptos');
     }
 
     public function getCryptocurrencies(): array

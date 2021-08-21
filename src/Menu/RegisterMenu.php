@@ -16,6 +16,9 @@ class RegisterMenu extends AbstractMenu
 
     public function isVisible(): bool
     {
-        return !$_SESSION['login'];
+        if(isset($_SESSION['login'])){
+            return false;
+        }
+        return true;
     }
 }
