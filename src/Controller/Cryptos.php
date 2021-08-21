@@ -98,9 +98,38 @@ class Cryptos
 
     public function sellPost(string $id): void
     {
-        // TODO
-        // verify if user is logged in
-        // use $this->userCryptocurrencyManager->subtractCryptocurrencyFromUser() method
+        $user = $this->userManager->getByLogin((string) $_SESSION['login']);
+        if (!$user) {
+            header('Location: /account');
+            return;
+        }
+
+        $cryptocurrency = $this->cryptocurrencyManager->getCryptocurrencyById($id);
+        if (!$cryptocurrency) {
+            header('Location: /account');
+            return;
+        }
+
+        $amount = $_POST['amount'];
+        $userId = $user->getId();
+        $cryptocurrencyPrice = $cryptocurrency->getPrice();
+        $cost = $amount * $cryptocurrencyPrice;
+
+        $userCryptocurrencyAmount = $this->userCryptocurrencyManager->getUserCryptocurrency($userId, $id);
+        if (!$userCryptocurrencyAmount) {
+            header('Location: /account');
+            return;
+        }
+
+        if ($amount > $userCryptocurrencyAmount->getAmount()){
+            $_SESSION['flash'] = 'Not enough amount!';
+        }else{
+            $this->userCryptocurrencyManager->subtractCryptocurrencyFromUser($userId,  $id, (int)$amount);
+            $this->userCryptocurrencyManager->addFoundsFromUser($userId,  $cost);
+            $_SESSION['flash'] = 'You sell ' .$id. ' cryptocurrency in the amount of '.$amount.' (profit: '.$cost.' USD).';
+        }
+
+        header('Location: /account');
     }
 
     public function getCryptocurrencies(): array

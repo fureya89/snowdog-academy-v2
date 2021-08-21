@@ -41,7 +41,11 @@ class UserCryptocurrencyManager
 
     public function subtractCryptocurrencyFromUser(int $userId, string $cryptocurrencyId, int $amount): void
     {
-        // TODO
+        $query = $this->database->prepare('UPDATE user_cryptocurrencies SET amount = amount - :amount WHERE user_id = :user_id AND cryptocurrency_id = :cryptocurrency_id');
+        $query->bindParam(':user_id', $userId, Database::PARAM_INT);
+        $query->bindParam(':cryptocurrency_id', $cryptocurrencyId, Database::PARAM_STR);
+        $query->bindParam(':amount', $amount, Database::PARAM_INT);
+        $query->execute();
     }
 
     public function getUserCryptocurrency(int $userId, string $cryptocurrencyId): ?UserCryptocurrency
@@ -60,6 +64,14 @@ class UserCryptocurrencyManager
     public function subtractFoundsFromUser(int $userId, float $cost): void
     {
         $query = $this->database->prepare('UPDATE users SET funds = funds - :cost WHERE id = :user_id');
+        $query->bindParam(':user_id', $userId, Database::PARAM_INT);
+        $query->bindParam(':cost', $cost);
+        $query->execute();
+    }
+
+    public function addFoundsFromUser(int $userId, float $cost): void
+    {
+        $query = $this->database->prepare('UPDATE users SET funds = funds + :cost WHERE id = :user_id');
         $query->bindParam(':user_id', $userId, Database::PARAM_INT);
         $query->bindParam(':cost', $cost);
         $query->execute();
