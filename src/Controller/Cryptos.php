@@ -136,4 +136,5 @@ class Cryptos
     {
         return $this->cryptocurrencyManager->getAllCryptocurrencies();
     }
+
 }
